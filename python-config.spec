@@ -59,8 +59,8 @@ make PYTHON=%{__python3} check
 
 %files -n python%{python3_pkgversion}-config
 %defattr(-,root,root,-)
-%{python3_sitelib}/python_config.py
-%{python3_sitelib}/__pycache__/python_config.*.py*
+%{python3_sitelib}/python_config/
+%{python3_sitelib}/python_config/__pycache__/
 %{python3_sitelib}/python_config-%{version}-*.egg-info
 %doc ChangeLog INSTALL README
 

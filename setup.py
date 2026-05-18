@@ -44,7 +44,7 @@ if __name__ == "__main__":
             ],
             platforms = [ "unix", "linux", "osx" ],
 
-            py_modules = [ "python_config" ],
+            packages = [ "python_config" ],
 
             cmdclass = { "test": PyTest },
             tests_require = [ "pytest" ],
