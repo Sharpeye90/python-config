@@ -1,7 +1,5 @@
 """python-config installation script."""
 
-from __future__ import unicode_literals
-
 from setuptools import setup
 from setuptools.command.test import test as Test
 
@@ -38,8 +36,8 @@ if __name__ == "__main__":
                 "Operating System :: MacOS :: MacOS X",
                 "Operating System :: POSIX",
                 "Operating System :: Unix",
-                "Programming Language :: Python :: 2",
                 "Programming Language :: Python :: 3",
+                "Programming Language :: Python :: 3.6",
                 "Topic :: Software Development :: Libraries :: Python Modules",
             ],
             platforms = [ "unix", "linux", "osx" ],

@@ -1,15 +1,25 @@
 """Python configuration file parser."""
 
-from __future__ import unicode_literals
-
-from .exceptions import Error, FileReadingError, ParsingError, ValidationError
-from .file import load
+from . import document
+from .exceptions import (
+    Error,
+    FileReadingError,
+    FileWritingError,
+    ParsingError,
+    ValidationError,
+)
+from .simple import dump, dumps, load, loads
 
 
 __all__ = [
     "Error",
     "FileReadingError",
+    "FileWritingError",
     "ParsingError",
     "ValidationError",
+    "document",
+    "dump",
+    "dumps",
     "load",
+    "loads",
 ]
