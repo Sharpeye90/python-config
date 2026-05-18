@@ -1,8 +1,10 @@
-A simple module for reading Python configuration files
+A library for reading Python configuration files
 
-Python configuration files themselves are actual Python files. The module reads
+Python configuration files themselves are actual Python files. The library reads
 only values in uppercase from them, checks that they contain only basic Python
 types and returns a dictionary which corresponds to the configuration file.
+
+Configuration file can be saved back using dump and dumps functions.
 
 Note: if you want to validate the configuration values, take a look at
 https://github.com/KonishchevDmitry/object-validator project.

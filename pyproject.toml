@@ -1,0 +1,73 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "python-config"
+version = "1.0.0"
+description = "A library for reading Python configuration files"
+authors = [
+    { name = "Dmitry Konishchev", email = "konishchev@gmail.com" },
+]
+license = { text = "GPL-3.0" }
+readme = "README"
+
+keywords = ["python-syntax", "configuration"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Operating System :: MacOS :: MacOS X",
+    "Operating System :: POSIX",
+    "Operating System :: Unix",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: Implementation :: CPython",
+]
+
+requires-python = ">=3.9"
+
+[project.optional-dependencies]
+dev = [
+    "mypy>=1.19.1",
+    "poethepoet>=0.32",
+    "pytest>=8",
+    "ruff>=0.9",
+]
+
+[tool.setuptools.packages.find]
+include = ["python_config", "python_config.*"]
+
+[tool.poe.tasks.format]
+help = "Format all the code."
+shell = "ruff check --fix --select I python_config/ tests/ && ruff format python_config/ tests/"
+
+[tool.poe.tasks.lint]
+help = "Lint all the code."
+cmd = "ruff check python_config/ tests/"
+
+[tool.poe.tasks.typecheck]
+help = "Typecheck all the code."
+cmd = "mypy python_config"
+
+[tool.poe.tasks.test]
+help = "Run unit tests."
+cmd = "pytest --strict-markers -vvv tests/"
+
+[tool.poe.tasks.ci]
+help = "Run full CI sequence."
+sequence = [
+  "format",
+  "lint",
+  "typecheck",
+  "test",
+]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint.isort]
+lines-after-imports = 2
