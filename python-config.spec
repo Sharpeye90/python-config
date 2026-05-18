@@ -13,8 +13,8 @@ Note: if you want to validate the configuration values, take a look at
 https://github.com/KonishchevDmitry/object-validator project.}
 
 Name:    python-config
-Version: 0.1.2
-Release: 4.ROCKIT3%{?dist}
+Version: 1.0.0
+Release: ROCKIT1%{?dist}
 Summary: A simple module for reading Python configuration files
 
 Group:   Development/Libraries
@@ -33,8 +33,10 @@ Summary: %{summary}
 BuildRequires: python%{python3_pkgversion}-devel
 BuildRequires: python%{python3_pkgversion}-setuptools
 %if 0%{with tests}
+BuildRequires: python3-dataclasses
 BuildRequires: python%{python3_pkgversion}-pytest >= 2.2.4
 %endif  # with tests
+Requires:  python3-dataclasses
 Obsoletes: python36-config
 Conflicts: python36-config
 

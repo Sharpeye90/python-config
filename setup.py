@@ -1,5 +1,7 @@
 """python-config installation script."""
 
+from pathlib import Path
+
 from setuptools import setup
 from setuptools.command.test import test as Test
 
@@ -16,34 +18,39 @@ class PyTest(Test):
 
 
 if __name__ == "__main__":
-    with open("README") as readme:
-        setup(
-            name = "python-config",
-            version = "0.1.2",
+    readme = Path("README").read_text()
+    version = Path("version.txt").read_text().strip()
 
-            description = readme.readline().strip(),
-            long_description = readme.read().strip() or None,
-            url = "https://github.com/KonishchevDmitry/python-config",
+    setup(
+        name = "python-config",
+        version = version,
 
-            license = "GPL3",
-            author = "Dmitry Konishchev",
-            author_email = "konishchev@gmail.com",
+        description = readme.split("\n", 1)[0],
+        long_description = readme,
+        url = "https://github.com/KonishchevDmitry/python-config",
 
-            classifiers = [
-                "Development Status :: 4 - Beta",
-                "Intended Audience :: Developers",
-                "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
-                "Operating System :: MacOS :: MacOS X",
-                "Operating System :: POSIX",
-                "Operating System :: Unix",
-                "Programming Language :: Python :: 3",
-                "Programming Language :: Python :: 3.6",
-                "Topic :: Software Development :: Libraries :: Python Modules",
-            ],
-            platforms = [ "unix", "linux", "osx" ],
+        license = "GPL3",
+        author = "Dmitry Konishchev",
+        author_email = "konishchev@gmail.com",
 
-            packages = [ "python_config" ],
+        classifiers = [
+            "Development Status :: 5 - Production/Stable",
+            "Intended Audience :: Developers",
+            "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+            "Operating System :: MacOS :: MacOS X",
+            "Operating System :: POSIX",
+            "Operating System :: Unix",
+            "Programming Language :: Python :: 3",
+            "Programming Language :: Python :: 3.6",
+            "Programming Language :: Python :: 3.7",
+            "Programming Language :: Python :: 3.8",
+            "Programming Language :: Python :: 3.9",
+            "Programming Language :: Python :: Implementation :: CPython",
+        ],
+        platforms = [ "unix", "linux", "osx" ],
 
-            cmdclass = { "test": PyTest },
-            tests_require = [ "pytest" ],
-        )
+        packages = [ "python_config" ],
+
+        cmdclass = { "test": PyTest },
+        tests_require = [ "pytest" ],
+    )
