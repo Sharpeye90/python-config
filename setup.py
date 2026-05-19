@@ -18,7 +18,7 @@ class PyTest(Test):
 
 
 if __name__ == "__main__":
-    readme = Path("README").read_text()
+    readme = Path("README.rst").read_text()
     version = Path("version.txt").read_text().strip()
 
     setup(

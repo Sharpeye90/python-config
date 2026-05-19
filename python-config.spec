@@ -64,7 +64,7 @@ make PYTHON=%{__python3} check
 %{python3_sitelib}/python_config/
 %{python3_sitelib}/python_config/__pycache__/
 %{python3_sitelib}/python_config-%{version}-*.egg-info
-%doc ChangeLog INSTALL README
+%doc ChangeLog INSTALL README.rst
 
 
 %clean
