@@ -10,7 +10,7 @@ authors = [
     { name = "Dmitry Konishchev", email = "konishchev@gmail.com" },
 ]
 license = { text = "GPL-3.0" }
-readme = "README"
+readme = "README.rst"
 
 keywords = ["python-syntax", "configuration"]
 classifiers = [
