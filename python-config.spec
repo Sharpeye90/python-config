@@ -33,9 +33,13 @@ BuildRequires: python%{python3_pkgversion}-devel
 BuildRequires: python%{python3_pkgversion}-setuptools
 %if 0%{with tests}
 BuildRequires: python3-dataclasses
+BuildRequires: python%{python3_pkgversion}-click
 BuildRequires: python%{python3_pkgversion}-pytest >= 2.2.4
+BuildRequires: python%{python3_pkgversion}-rich
 %endif  # with tests
 Requires:  python3-dataclasses
+Requires:  python%{python3_pkgversion}-click
+Requires:  python%{python3_pkgversion}-rich
 Obsoletes: python36-config
 Conflicts: python36-config
 
@@ -60,6 +64,7 @@ make PYTHON=%{__python3} check
 
 %files -n python%{python3_pkgversion}-config
 %defattr(-,root,root,-)
+%{_bindir}/python-config-view
 %{python3_sitelib}/python_config/
 %{python3_sitelib}/python_config/__pycache__/
 %{python3_sitelib}/python_config-%{version}-*.egg-info
