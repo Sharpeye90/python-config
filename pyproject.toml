@@ -30,6 +30,14 @@ classifiers = [
 
 requires-python = ">=3.9"
 
+dependencies = [
+    "click>=7,<9",
+    "rich>=10,<13",
+]
+
+[project.scripts]
+python-config-view = "python_config.viewer.cli:main"
+
 [project.optional-dependencies]
 dev = [
     "mypy>=1.19.1",

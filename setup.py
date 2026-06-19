@@ -36,5 +36,11 @@ if __name__ == "__main__":
             "Programming Language :: Python :: Implementation :: CPython",
         ],
         platforms = [ "unix", "linux", "osx" ],
-        packages = [ "python_config" ],
+        packages = [ "python_config", "python_config.viewer" ],
+
+        entry_points = {
+            "console_scripts": [
+                "python-config-view = python_config.viewer.cli:main",
+            ],
+        },
     )

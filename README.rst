@@ -44,6 +44,36 @@ preserved through the document API.
    If you want to validate the configuration values, take a look at
    https://github.com/KonishchevDmitry/object-validator project or just use Pydantic.
 
+Interactive viewer
+------------------
+
+A terminal UI is included for browsing large configuration files without scrolling
+through thousands of lines in an editor. It loads configs through the document API
+so f-strings, arithmetic, and comments are shown as in the source.
+
+.. source:: bash
+
+   python-config-view /path/to/config.conf
+   python -m python_config.viewer /path/to/config.conf
+
+Use ``--page-size`` to control pagination (default 20) and ``--no-color`` for
+plain output.
+
+Key bindings:
+
+==========  ======================================================
+Key         Action
+==========  ======================================================
+``/``       Search variables or keys at the current level
+``n``/``j`` Next item (or next page at end of page)
+``p``/``k`` Previous item (or previous page at start of page)
+``Enter``   Open a dict/list child or jump to a search result
+``1``-``9`` Quick-select an item on the current page
+``b``       Go back (or leave search results)
+``s``       Toggle source view (top-level variables only)
+``q``       Quit
+==========  ======================================================
+
 Tests
 -----
 
