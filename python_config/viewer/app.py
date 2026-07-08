@@ -1,6 +1,7 @@
 """Interactive application loop for the config viewer."""
 
 import click
+from rich.live import Live
 
 from . import nav, render
 
@@ -77,7 +78,7 @@ class ViewerApp:
         _label, _type_name, _preview, child_path = page_items[self.selected_index]
         return child_path or self.path
 
-    def _draw(self, page_items, page, total_pages):
+    def _draw(self, page_items, page, total_pages, live=None):
         if not page_items and self.path:
             detail_path = self.path
             if self.path:
@@ -110,6 +111,7 @@ class ViewerApp:
             search_results=self.search_results,
             message=self.message,
             show_source=self.show_source,
+            live=live,
         )
         self.message = None
 
@@ -148,8 +150,15 @@ class ViewerApp:
             self.selected_index = 0
             self._reset_detail_state()
 
-    def _start_search(self):
-        query = self.prompt_fn("Search", default="")
+    def _start_search(self, live=None):
+        if live is not None:
+            live.stop()
+        try:
+            query = self.prompt_fn("Search", default="")
+        finally:
+            if live is not None:
+                live.start(refresh=True)
+
         self.search_results = nav.search(self.doc, self.path, query)
         if not self.search_results:
             self.message = f"No matches for {query!r}"
@@ -204,9 +213,19 @@ class ViewerApp:
     def run(self):
         """Run the interactive loop until the user quits."""
 
+        use_screen = self.console.is_terminal
+        with Live(
+            "",
+            console=self.console,
+            auto_refresh=False,
+            screen=use_screen,
+        ) as live:
+            self._run_loop(live)
+
+    def _run_loop(self, live):
         while True:
             if self.search_mode:
-                self._draw([], 0, 1)
+                self._draw([], 0, 1, live=live)
                 key = self._read_key()
                 if key in ("q", "Q"):
                     return
@@ -234,7 +253,7 @@ class ViewerApp:
 
             page_items, page, total_pages = self._current_page_items()
             self._clamp_selection(page_items)
-            self._draw(page_items, page, total_pages)
+            self._draw(page_items, page, total_pages, live=live)
 
             key = self._read_key()
             if key in ("q", "Q"):
@@ -243,7 +262,7 @@ class ViewerApp:
                 self._go_back()
                 continue
             if key == "/":
-                self._start_search()
+                self._start_search(live=live)
                 continue
             if key in ("s", "S"):
                 self._toggle_source(page_items)
