@@ -108,6 +108,53 @@ def render_help_bar(show_source_available=False):
     return Text(help_text, style="dim")
 
 
+def build_screen(
+    config_path,
+    doc,
+    path,
+    page_items,
+    page,
+    total_pages,
+    selected_index,
+    detail_label,
+    search_mode=False,
+    search_results=None,
+    message=None,
+    show_source=False,
+):
+    """Build the full viewer screen as a single renderable."""
+
+    parts = [
+        Panel(Text(f"python-config-view: {config_path}", style="bold"), border_style="green"),
+        Text(f"Path: {nav.format_path(path)}", style="cyan"),
+    ]
+
+    if message:
+        parts.append(Text(message, style="yellow"))
+
+    parts.append(
+        render_children_table(
+            page_items,
+            page,
+            total_pages,
+            selected_index,
+            search_mode,
+            search_results,
+        )
+    )
+
+    show_source_available = False
+    if detail_label and not search_mode:
+        _value, assignment = nav.resolve(doc, path)
+        parts.append(render_detail_panel(doc, path, detail_label, show_source=show_source))
+        show_source_available = assignment is not None
+
+    parts.append(Text(""))
+    parts.append(render_help_bar(show_source_available=show_source_available))
+
+    return Group(*parts)
+
+
 def render_screen(
     console,
     config_path,
@@ -122,41 +169,30 @@ def render_screen(
     search_results=None,
     message=None,
     show_source=False,
+    live=None,
 ):
-    """Render the full viewer screen to *console*."""
+    """Render or update the full viewer screen."""
 
-    console.clear(home=False)
-
-    header = f"python-config-view: {config_path}"
-    console.print(Panel(Text(header, style="bold"), border_style="green"))
-    console.print(Text(f"Path: {nav.format_path(path)}", style="cyan"))
-
-    if message:
-        console.print(Text(message, style="yellow"))
-        console.print()
-
-    console.print(
-        render_children_table(
-            page_items,
-            page,
-            total_pages,
-            selected_index,
-            search_mode,
-            search_results,
-        ),
+    screen = build_screen(
+        config_path,
+        doc,
+        path,
+        page_items,
+        page,
+        total_pages,
+        selected_index,
+        detail_label,
+        search_mode=search_mode,
+        search_results=search_results,
+        message=message,
+        show_source=show_source,
     )
 
-    if detail_label and not search_mode:
-        _value, assignment = nav.resolve(doc, path)
-        console.print(
-            render_detail_panel(doc, path, detail_label, show_source=show_source)
-        )
-        show_source_available = assignment is not None
-    else:
-        show_source_available = False
+    if live is not None:
+        live.update(screen, refresh=True)
+        return
 
-    console.print()
-    console.print(render_help_bar(show_source_available=show_source_available))
+    console.print(screen)
 
 
 def selectable_rows(page_items):
