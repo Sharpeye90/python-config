@@ -76,8 +76,38 @@ def test_truncate_text():
     assert text != "a" * 3000
 
 
+def test_pager_viewport_centers_short_content():
+    visible, scroll, can_up, can_down = nav.pager_viewport(["a", "b"], 0, 5)
+    assert visible == ["", "a", "b", "", ""]
+    assert scroll == 0
+    assert not can_up
+    assert not can_down
+
+
+def test_pager_viewport_scrolls_long_content():
+    lines = [str(index) for index in range(10)]
+    visible, scroll, can_up, can_down = nav.pager_viewport(lines, 0, 3)
+    assert visible == ["0", "1", "2"]
+    assert scroll == 0
+    assert not can_up
+    assert can_down
+
+    visible, scroll, can_up, can_down = nav.pager_viewport(lines, 1, 3)
+    assert visible == ["1", "2", "3"]
+    assert scroll == 1
+    assert can_up
+    assert can_down
+
+
+def test_value_pager_lines_dict(confdoc):
+    value, _assignment = nav.resolve(confdoc, (nav.VarKey("PROJECT"),))
+    lines = nav.value_pager_lines(value, width=100)
+    assert len(lines) > 5
+    assert any("python-config" in line for line in lines)
+
+
 def test_viewer_app_toggle_source(confdoc, confpath):
-    keys = iter(["s", "s", "q"])
+    keys = iter(["a", "a", "q"])
 
     run_viewer(
         confdoc,
@@ -101,7 +131,8 @@ def test_render_detail_panel_source_toggle(confdoc):
     value_panel = render_detail_panel(confdoc, path, "BUILD_NUMBER", show_source=False)
     console.print(value_panel)
     value_output = console.file.getvalue()
-    assert "Press s to view source" in value_output
+    assert "Press s to expand value" in value_output
+    assert "Press a to view assignment source" in value_output
     assert "1 + 2 * 3" not in value_output
 
     console = Console(file=StringIO(), force_terminal=True, width=120, no_color=True)
@@ -109,7 +140,42 @@ def test_render_detail_panel_source_toggle(confdoc):
     console.print(source_panel)
     source_output = console.file.getvalue()
     assert "BUILD_NUMBER = 7" in source_output
-    assert "Press s to return to value" in source_output
+    assert "Press a to return to value" in source_output
+
+
+def test_viewer_app_pager_toggle(confdoc, confpath):
+    children = nav.list_children(confdoc, ())
+    project_index = next(
+        index for index, (label, *_rest) in enumerate(children) if label == "PROJECT"
+    )
+    keys = ["n"] * project_index + ["s", "s", "q"]
+    key_iter = iter(keys)
+
+    run_viewer(
+        confdoc,
+        str(confpath),
+        no_color=True,
+        input_fn=lambda: next(key_iter),
+        prompt_fn=lambda *args, **kwargs: "",
+    )
+
+
+def test_render_pager_screen(confdoc):
+    from io import StringIO
+
+    from rich.console import Console
+
+    from python_config.viewer.render import build_pager_screen
+
+    value, _assignment = nav.resolve(confdoc, (nav.VarKey("PROJECT"),))
+    lines = nav.value_pager_lines(value, width=100)
+    screen = build_pager_screen("PROJECT", (nav.VarKey("PROJECT"),), lines, 0, 40)
+    console = Console(file=StringIO(), force_terminal=True, width=100, height=40, no_color=True)
+    console.print(screen)
+    output = console.file.getvalue()
+    assert "PROJECT" in output
+    assert "python-config" in output
+    assert "[j/n] down" in output
 
 
 def test_viewer_app_quits_on_q(confdoc, confpath):
