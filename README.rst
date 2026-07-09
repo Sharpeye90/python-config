@@ -70,7 +70,8 @@ Key         Action
 ``Enter``   Open a dict/list child or jump to a search result
 ``1``-``9`` Quick-select an item on the current page
 ``b``       Go back (or leave search results)
-``s``       Toggle source view (top-level variables only)
+``s``       Expand the current value full-screen (scroll with ``j``/``n`` and ``k``/``p``)
+``a``       Toggle assignment source view (top-level variables only)
 ``q``       Quit
 ==========  ======================================================
 

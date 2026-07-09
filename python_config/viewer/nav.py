@@ -247,6 +247,51 @@ def truncate_text(text, max_len=2000):
     return textwrap.shorten(text or "", width=max_len)
 
 
+def value_pager_lines(value, width=120):
+    """Return full pretty-printed lines of *value* for the scrollable pager."""
+
+    from io import StringIO
+
+    from rich.console import Console
+    from rich.pretty import Pretty
+
+    buffer = StringIO()
+    console = Console(
+        file=buffer,
+        force_terminal=True,
+        width=max(40, width),
+        no_color=True,
+        highlight=False,
+    )
+    console.print(Pretty(value, expand_all=True, indent_guides=True))
+    text = buffer.getvalue()
+    if text and not text.endswith("\n"):
+        text += "\n"
+    return text.splitlines()
+
+
+def pager_viewport(lines, scroll, viewport_height):
+    """Return ``(visible_lines, scroll, can_scroll_up, can_scroll_down)``."""
+
+    if viewport_height < 1:
+        viewport_height = 1
+
+    total = len(lines)
+    if total == 0:
+        return [""] * viewport_height, 0, False, False
+
+    if total <= viewport_height:
+        pad_top = (viewport_height - total) // 2
+        pad_bottom = viewport_height - total - pad_top
+        visible = [""] * pad_top + lines + [""] * pad_bottom
+        return visible, 0, False, False
+
+    max_scroll = total - viewport_height
+    scroll = max(0, min(scroll, max_scroll))
+    visible = lines[scroll : scroll + viewport_height]
+    return visible, scroll, scroll > 0, scroll < max_scroll
+
+
 def metadata_lines(assignment):
     """Return metadata lines for a top-level *assignment*."""
 

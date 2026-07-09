@@ -74,7 +74,7 @@ def render_detail_panel(doc, path, label, show_source=False):
         lines.append(Text("Source:", style="bold"))
         lines.append(nav.truncate_text(nav.assignment_source_text(assignment)))
         lines.append("")
-        lines.append(Text("Press s to return to value", style="dim italic"))
+        lines.append(Text("Press a to return to value", style="dim italic"))
     else:
         lines.append(Text("Value:", style="bold"))
         lines.append(
@@ -85,9 +85,10 @@ def render_detail_panel(doc, path, label, show_source=False):
                 max_string=300,
             )
         )
+        lines.append("")
+        lines.append(Text("Press s to expand value", style="dim italic"))
         if assignment is not None:
-            lines.append("")
-            lines.append(Text("Press s to view source", style="dim italic"))
+            lines.append(Text("Press a to view assignment source", style="dim italic"))
 
     metadata = nav.metadata_lines(assignment)
     if metadata:
@@ -101,11 +102,56 @@ def render_detail_panel(doc, path, label, show_source=False):
 def render_help_bar(show_source_available=False):
     """Return help text for key bindings."""
 
-    help_text = "[/] search  [n]ext  [p]prev  [Enter] open  [b] back"
+    help_text = "[/] search  [n]ext  [p]prev  [Enter] open  [b] back  [s] expand"
     if show_source_available:
-        help_text += "  [s] source"
+        help_text += "  [a] source"
     help_text += "  [q] quit"
     return Text(help_text, style="dim")
+
+
+def build_pager_screen(label, path, lines, scroll, console_height):
+    """Build a full-screen scrollable view of a value."""
+
+    header = Panel(
+        Text(f"{label} — {nav.format_path(path)}", style="bold"),
+        border_style="green",
+    )
+
+    viewport_height = max(1, console_height - 6)
+    visible, scroll, can_up, can_down = nav.pager_viewport(lines, scroll, viewport_height)
+    body = Panel(
+        Group(*[Text(line) for line in visible]),
+        title="Value",
+        border_style="blue",
+    )
+
+    hints = []
+    if can_up:
+        hints.append("[k/p] up")
+    if can_down:
+        hints.append("[j/n] down")
+    hints.extend(["[s/b] close", "[q] quit"])
+
+    footer = f"{'  '.join(hints)}  lines {scroll + 1}-{scroll + len(visible)}/{len(lines)}"
+    return Group(header, body, Text(footer, style="dim"))
+
+
+def render_pager_screen(console, label, path, lines, scroll, live=None):
+    """Render or update the pager screen."""
+
+    screen = build_pager_screen(
+        label,
+        path,
+        lines,
+        scroll,
+        console.height,
+    )
+
+    if live is not None:
+        live.update(screen, refresh=True)
+        return
+
+    console.print(screen)
 
 
 def build_screen(

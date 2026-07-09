@@ -32,9 +32,19 @@ class ViewerApp:
         self.search_results = []
         self.message = None
         self.show_source = False
+        self.pager_mode = False
+        self.pager_scroll = 0
+        self.pager_lines = []
+        self.pager_path = ()
+        self.pager_label = ""
 
     def _reset_detail_state(self):
         self.show_source = False
+        self.pager_mode = False
+        self.pager_scroll = 0
+        self.pager_lines = []
+        self.pager_path = ()
+        self.pager_label = ""
 
     def _detail_assignment(self, page_items):
         if not page_items and self.path:
@@ -78,24 +88,26 @@ class ViewerApp:
         _label, _type_name, _preview, child_path = page_items[self.selected_index]
         return child_path or self.path
 
-    def _draw(self, page_items, page, total_pages, live=None):
+    def _resolve_detail(self, page_items):
         if not page_items and self.path:
             detail_path = self.path
-            if self.path:
-                last = self.path[-1]
-                if hasattr(last, "name"):
-                    detail_label = last.name
-                elif hasattr(last, "key"):
-                    detail_label = str(last.key)
-                elif hasattr(last, "index"):
-                    detail_label = f"[{last.index}]"
-                else:
-                    detail_label = nav.format_path(self.path)
+            last = self.path[-1]
+            if hasattr(last, "name"):
+                detail_label = last.name
+            elif hasattr(last, "key"):
+                detail_label = str(last.key)
+            elif hasattr(last, "index"):
+                detail_label = f"[{last.index}]"
             else:
-                detail_label = None
+                detail_label = nav.format_path(self.path)
         else:
             detail_path = self._detail_path(page_items)
             detail_label = self._detail_label(page_items)
+
+        return detail_path, detail_label
+
+    def _draw(self, page_items, page, total_pages, live=None):
+        detail_path, detail_label = self._resolve_detail(page_items)
 
         render.render_screen(
             self.console,
@@ -114,6 +126,62 @@ class ViewerApp:
             live=live,
         )
         self.message = None
+
+    def _draw_pager(self, live=None):
+        render.render_pager_screen(
+            self.console,
+            self.pager_label,
+            self.pager_path,
+            self.pager_lines,
+            self.pager_scroll,
+            live=live,
+        )
+
+    def _enter_pager(self, page_items):
+        detail_path, detail_label = self._resolve_detail(page_items)
+        if not detail_path:
+            return
+
+        value, _assignment = nav.resolve(self.doc, detail_path)
+        self.pager_path = detail_path
+        self.pager_label = detail_label or nav.format_path(detail_path)
+        self.pager_lines = nav.value_pager_lines(value, width=self.console.width)
+        self.pager_scroll = 0
+        self.pager_mode = True
+        self.show_source = False
+
+    def _exit_pager(self):
+        self.pager_mode = False
+        self.pager_scroll = 0
+        self.pager_lines = []
+
+    def _scroll_pager(self, delta):
+        if not self.pager_lines:
+            return
+
+        viewport_height = max(1, self.console.height - 6)
+        _visible, scroll, _can_up, _can_down = nav.pager_viewport(
+            self.pager_lines,
+            self.pager_scroll + delta,
+            viewport_height,
+        )
+        self.pager_scroll = scroll
+
+    def _handle_pager_key(self, key, live):
+        if key in ("q", "Q"):
+            return True
+        if key in ("s", "S", "b", "B", "\x1b"):
+            self._exit_pager()
+            return False
+        if key in ("j", "J", "n", "N"):
+            self._scroll_pager(1)
+            self._draw_pager(live=live)
+            return False
+        if key in ("k", "K", "p", "P"):
+            self._scroll_pager(-1)
+            self._draw_pager(live=live)
+            return False
+        return False
 
     def _read_key(self):
         try:
@@ -206,9 +274,15 @@ class ViewerApp:
 
     def _toggle_source(self, page_items):
         if self._detail_assignment(page_items) is None:
-            self.message = "Source is available only for top-level variables"
+            self.message = "Assignment source is available only for top-level variables"
             return
         self.show_source = not self.show_source
+
+    def _toggle_pager(self, page_items):
+        if self.pager_mode:
+            self._exit_pager()
+            return
+        self._enter_pager(page_items)
 
     def run(self):
         """Run the interactive loop until the user quits."""
@@ -224,6 +298,12 @@ class ViewerApp:
 
     def _run_loop(self, live):
         while True:
+            if self.pager_mode:
+                self._draw_pager(live=live)
+                if self._handle_pager_key(self._read_key(), live):
+                    return
+                continue
+
             if self.search_mode:
                 self._draw([], 0, 1, live=live)
                 key = self._read_key()
@@ -265,6 +345,9 @@ class ViewerApp:
                 self._start_search(live=live)
                 continue
             if key in ("s", "S"):
+                self._toggle_pager(page_items)
+                continue
+            if key in ("a", "A"):
                 self._toggle_source(page_items)
                 continue
             if key in ("n", "N", "j", "J"):
