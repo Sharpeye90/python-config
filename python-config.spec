@@ -2,7 +2,6 @@
 
 %bcond_without tests
 
-%global project_name pcore
 %global project_description %{expand:
 Python configuration files themselves are actual Python files. The module
 reads only values in uppercase from them, checks that they contain only basic
