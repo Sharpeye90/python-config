@@ -5,6 +5,10 @@ from .exceptions import ValidationError, _ValidationError
 from .validation import _validate_value
 
 
+_UNSET = object()
+"""Guard object to be able to distinguish user-provided None."""
+
+
 @dataclass(eq=False)
 class Assignment:
     """Assignment that may be documented.
@@ -93,10 +97,7 @@ class ConfigDocument:
         return [item.name for item in self.items]
 
     def getvar(self, name):
-        """Return unwrapped Assignment object for access to its metadata.
-
-        Use it cautiously!
-        """
+        """Return the :class:`Assignment` for a top-level option."""
 
         for item in self.items:
             if item.name == name:
@@ -104,21 +105,37 @@ class ConfigDocument:
 
         raise KeyError(name)
 
+    def setvar(self, name, value=_UNSET, *, docstring=_UNSET):
+        """Create or update a top-level assignment."""
+
+        if value is _UNSET and docstring is _UNSET:
+            raise TypeError("setvar() requires at least one of value or docstring")
+
+        # Find or create a corresponding Assignment.
+        try:
+            item = self.getvar(name)
+        except KeyError:
+            if value is _UNSET:
+                raise TypeError("setvar() value is required when creating a new assignment")
+
+            item = Assignment(name=name, value=None)
+            self.items.append(item)
+
+        # Update value and/or docstring when provided.
+        if value is not _UNSET:
+            try:
+                item.value = _validate_value(name, value)
+            except _ValidationError as e:
+                raise ValidationError("<runtime>", e)
+
+        if docstring is not _UNSET:
+            item.docstring = docstring
+
     def __getitem__(self, name):
         return self.getvar(name).value
 
     def __setitem__(self, name, value):
-        try:
-            value = _validate_value(name, value)
-        except _ValidationError as e:
-            raise ValidationError("<runtime>", e)
-
-        for item in self.items:
-            if item.name == name:
-                item.value = value
-                return
-
-        self.items.append(Assignment(name=name, value=value))
+        self.setvar(name, value)
 
     def __delitem__(self, name):
         for index, item in enumerate(self.items):
