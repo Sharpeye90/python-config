@@ -2,6 +2,6 @@ include ChangeLog
 include INSTALL
 include Makefile
 include python-config.spec
-include README
+include README.rst
 include tests/*.conf
 include tests/*.py

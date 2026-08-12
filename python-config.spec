@@ -2,7 +2,6 @@
 
 %bcond_without tests
 
-%global project_name pcore
 %global project_description %{expand:
 Python configuration files themselves are actual Python files. The module
 reads only values in uppercase from them, checks that they contain only basic
@@ -13,8 +12,8 @@ Note: if you want to validate the configuration values, take a look at
 https://github.com/KonishchevDmitry/object-validator project.}
 
 Name:    python-config
-Version: 0.1.2
-Release: 4.ROCKIT3%{?dist}
+Version: 1.0.0
+Release: ROCKIT1%{?dist}
 Summary: A simple module for reading Python configuration files
 
 Group:   Development/Libraries
@@ -33,8 +32,14 @@ Summary: %{summary}
 BuildRequires: python%{python3_pkgversion}-devel
 BuildRequires: python%{python3_pkgversion}-setuptools
 %if 0%{with tests}
+BuildRequires: python3-dataclasses
+BuildRequires: python%{python3_pkgversion}-click
 BuildRequires: python%{python3_pkgversion}-pytest >= 2.2.4
+BuildRequires: python%{python3_pkgversion}-rich
 %endif  # with tests
+Requires:  python3-dataclasses
+Requires:  python%{python3_pkgversion}-click
+Requires:  python%{python3_pkgversion}-rich
 Obsoletes: python36-config
 Conflicts: python36-config
 
@@ -59,10 +64,11 @@ make PYTHON=%{__python3} check
 
 %files -n python%{python3_pkgversion}-config
 %defattr(-,root,root,-)
-%{python3_sitelib}/python_config.py
-%{python3_sitelib}/__pycache__/python_config.*.py*
+%{_bindir}/python-config-view
+%{python3_sitelib}/python_config/
+%{python3_sitelib}/python_config/__pycache__/
 %{python3_sitelib}/python_config-%{version}-*.egg-info
-%doc ChangeLog INSTALL README
+%doc ChangeLog INSTALL README.rst
 
 
 %clean
